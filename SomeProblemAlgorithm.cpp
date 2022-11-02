@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <string> 
+#include <cmath>
 using namespace std;
 
 //这个思维方式就是，
@@ -777,6 +778,627 @@ void MetoCarloPi()
     cout<<"PI="<<(double)4*sum/N<<endl;
 }
 
+/// @brief 筛选法求质数。
+/// 最简单的暴力回圈算法：从2开始检查所有小于N的数是否能够被N整除，能整除，则N不是质数。
+/// 第一次改进算法：因为A*B=N，所以检查的数字范围只需要x*x<=N即可，无需全部遍历，可以减少一半遍历范围。
+/// 筛选法算法：因为2的倍数都能被2整除，3的倍数都能被3整除，5的倍数都能被5整除，...，所以这些都要筛除，这样就只剩下几个数字去计算了。
+void Eratosthenes()
+{
+    int i,j;
+    const int N = 1000;
+    int prime[N+1];
+
+    //初始化，假设都是指数
+    for(i = 2; i<= N; i++)
+    {
+        prime[i]=1;
+    }
+    clock_t start,end;//用于计时
+    start = clock()    ;
+    for(i = 2; i*i<=N; i++)
+    {
+        //开始筛选，第一次筛选数i为2，第二次这里满足条件的是3，第三次满足条件的是5，。。。，通过一遍一遍的筛选，最后剩下的就是质数。
+        if(prime[i]==1){
+
+            for(j=i+1; j<=N; j++)
+            {
+                //所有能被i整除的数，都要筛去
+                if(j % i ==0)
+                {
+                    prime[j]=0; //该数不为质数
+                }
+            }
+        }
+    }
+    end = clock();
+    cout<<"筛选法耗时【"<<(long double)(end-start)/CLOCKS_PER_SEC <<"】秒"<<endl;
+
+   
+
+    //显示所有N以内的质数
+    int endlPerCount = 0;
+    for(i =2; i<N;i++)
+    {
+        if(prime[i] == 1)
+        {
+            cout<<i<<"\t";
+            endlPerCount++;
+            if(endlPerCount%10==0)
+            {
+                cout<<"\n";
+            }
+        }
+        
+    }
+
+
+}
+/// @brief 这种方式貌似比筛选法快点
+void primenumber()
+{
+    const int N = 100000;
+    int prime[N+1];
+clock_t start,end;//用于计时
+    start = clock()    ;
+    bool isPrime= false;
+    for(int i=2;i<=N;i++)
+    {
+        isPrime=true;
+        for(int j = 2;j*j<=i; j++)
+        {
+            if( 0 == i %j)
+            {
+                prime[i]=0;
+                isPrime = false;
+                break;
+            }
+        }
+        if(isPrime)
+            prime[i]=1;
+    }
+
+      end = clock();
+    cout<<"常规耗时【"<<(long double)(end-start)/CLOCKS_PER_SEC <<"】秒"<<endl;
+     
+     return;
+    //显示所有N以内的质数
+    int endlPerCount = 0;
+    for(int i =2; i<N;i++)
+    {
+        if(prime[i] == 1)
+        {
+            cout<<i<<"\t";
+            endlPerCount++;
+            if(endlPerCount%10==0)
+            {
+                cout<<"\n";
+            }
+        }
+        
+    }
+}
+
+
+/// @brief 假设 1000 1230 3212 2312 +  1000 1230 3212 2312 = ?
+/// 数组中每个位置存储的值上限我们设定为9999，更易于十进制可读性。
+/// 如下属于类似大端模式，即低地址放高位数据。
+/// 1000 1230 3212 2312
+/// a[0] a[1] a[2] a[3]
+///+1000 1230 3212 2312
+///+b[0] b[1] b[2] b[3]
+///=2000 2460 6424 4624
+///=c[0] c[1] c[2] c[3]
+
+class BigNumber
+{
+    public:
+        int N ; //长度
+    public:
+        void Add(int *a, int *b, int *c)
+        {
+            int i , carry = 0;
+            for(i = N -1 ; i >=0; i--)
+            {
+                //从低位数据开始计算，因为低位数据放在数组的最后面。
+                c[i] = a[i] + b[i] + carry;
+                if(c[i]<10000)
+                    carry=0; //不进位
+                else
+                {
+                    //进位
+                    c[i]=c[i]-10000;
+                    carry = 1;
+                }
+            }
+        }
+
+        void sub(int *a, int *b, int *c)
+        {
+            int i , borrow = 0;
+            for(i = N-1; i>=0; i--)
+            {
+                c[i] = a[i] - b[i] - borrow;
+                if(c[i]>=0)
+                {
+                    borrow=0;
+                }
+                else
+                {
+                    c[i] = c[i]+10000;
+                    borrow=1; //借位
+                }
+            }
+        }
+
+        void mul(int *a, int b, int *c)
+        {
+            int i,tmp,carry=0;
+            for(i = N - 1; i>=0; i--)
+            {
+                tmp = a[i]* b + carry;
+                c[i] = tmp%10000;
+                carry = tmp/10000;
+            }
+        }
+
+        void div(int *a, int b, int *c)
+        {
+            int i, tmp, remain = 0;
+            for(i = 0; i<N; i++)
+            {
+                tmp = a[i] + remain;
+                c[i] = tmp/b;
+                remain = (tmp%b)*10000;
+            }
+        }
+
+};
+
+/// @brief 最大公约数和最小公倍数
+void GCD()
+{
+    int a,b;
+    cin.get();
+    cout<<"请输入两个数字，空格分开"<<endl;
+    cin>>a>>b;
+    long int s = a * b;
+    int c= 0;
+    while(b!=0){
+        c = a%b;
+        a = b;
+        b = c;
+    }
+    cout<<"GCD:"<<a<<endl;
+    cout<<"LCM:"<<s/a<<endl;
+}
+
+void Armstrong()
+{
+    int a100,a10,a1;
+    int number;
+    cout<<"开始搜寻 armstrong 数:"
+    <<endl;
+    for(number = 100;number<1000;number++)
+    {
+        a100 = number/100;
+        a10 = (number%100)/10;
+        a1 = (number%10);
+        if(pow(a100,3) + pow(a10,3)+pow(a1,3) == number)
+        {
+
+            cout<<number<<":"<<pow(a100,3)<<","<<pow(a10,3)<<","<<pow(a1,3)<<",";
+        }
+    }
+    cout<<"结束搜寻 armstrong 数\n";
+}
+
+/// @brief 访客问题：将举行一个餐会，让访客事先填写到达时间与离开时间，为了掌握座位的数目，必须先估计不同时间的最大访客数
+class Visitor
+{
+    //这个问题，其实可以换句话说，就是在某个时间点，来了多少人，走了多少，剩下多少人。
+    //将来的人时间按从小到大排序，走的时间按照从小到大排序，这样在某个时间点上，来多少走多少一目了然。
+    private:
+        static const int MAX =5;
+
+        void SWAP(int &x,int &y)
+        {
+            int t;
+            t = x;
+            x = y;
+            y = t;
+        }
+
+        //分区排序
+        int partition(int number[], int left, int right)
+        {
+            int i,j,s;
+            s = number[right];
+            i = left;
+            for(j = left; j<right;j++)
+            {
+                if(number[j]<=s)
+                {
+                    i++;
+                    SWAP(number[i],number[j]);
+                }
+
+            }
+            SWAP(number[i+1], number[right]);
+            return i+1;
+        }
+
+        void quicksort(int number[], int left, int right)
+        {
+            int q;
+            if(left<right)
+            {
+                q = partition(number, left, right);
+                quicksort(number, left, q-1);
+                quicksort(number, q+1, right);
+            }
+        }
+        //在某个时间点，当前有多少人
+        int maxguest(int x[], int y[], int count, int time)
+        {
+            int i, num =0;
+
+            for(i=0; i< count; i++)
+            {
+                if(time>x[i])
+                    num++;
+                if(time>y[i])
+                    num--;
+            }
+            return num;
+        }
+
+        public :
+            void MainTest()
+            {
+                srand(time(NULL));
+                int x[MAX] = {0};
+                int y[MAX] = {0};
+                int time = 0;
+                int count = 0;
+                
+                for(int i =0;i<MAX;i++)
+                {
+                    x[i] = (rand()/(double)RAND_MAX)*20;
+                    y[i] = x[i] + 3;
+                    cout<<x[i]<<" "<<y[i]<<endl;
+                }
+                quicksort(x,0,MAX-1);
+                quicksort(y,0,MAX-1);
+                for(int t =0; t<=24; t++)
+                {
+                    cout<<"时间:"<<t<<" "<<maxguest(x,y,MAX,t)<<endl;
+                }
+                cout<<"\n";
+            }
+            static void Test()
+            {
+                Visitor p;
+                p.MainTest();
+            }
+
+
+};
+
+
+void XiPai()
+{
+    const int N = 52;
+    int pokers[N];
+    int i,  j, tmp, remain;
+    char pokerNames[13][3]={{" K"},{" Q"},{" J"},{"10"},{" 9"},{" 8"},{" 7"},{" 6"},{" 5"},{" 4"},{" 3"},{" 2"},{" 1"}};
+    //每张扑克放在顺序的位置上
+    for(i=0; i<N; i++)
+    {
+        pokers[i]=i;
+    }
+    srand(time(NULL));
+
+    //以走访每个排位，然后随机将其与其他排位进行交换的方式，进行洗牌
+    for(i = 0; i < N; i++)
+    {
+        j = rand()%52;
+        tmp = pokers[i];
+        pokers[i] = pokers[j];
+        pokers[j]= tmp;
+    }
+    //给牌分配花色
+    for(i = 0; i<N; i++)
+    {
+        switch ((pokers[i])%4)
+        {
+        case 0:
+            cout<<"♤";
+            break;
+        case 1:
+            cout<<"♡";
+            break;
+        case 2:
+            cout<<"♢";
+            break;
+        case 3:
+            cout<<"♧";
+            break;
+                
+        
+        default:
+            break;
+        }
+
+        remain = pokers[i]%13;
+        cout<<""<<pokerNames[remain];
+    }
+
+
+
+
+}
+
+
+int rollTwoDice()
+{
+    return (rand()%6+1)+(rand()%6+1);
+}
+/// @brief 两个骰子的游戏， 测算一下玩家的胜率
+void crapsGame()
+{
+    int winCount = 0;
+    int loseCount = 0;
+    const int testCount = 1000;
+
+    const int WIN = 0;
+    const int LOSE = 1;
+    const int CONTINUE = 2;
+    int countRoll = 0; //投色子的次数
+    int gameStatus = CONTINUE;
+    int die1, die2, sumOfDice;
+    int firstPoint = 0;
+    char c;
+    
+    srand(time(NULL));
+
+    cout<<"Craps赌博游戏，>>>>>>   <<<<<< "<<endl;
+    int test_index = 0;
+    while(test_index<testCount)
+    {
+        while(1)
+        {
+            //getchar();
+            countRoll++;
+            //投色子
+            sumOfDice = rollTwoDice();
+            cout<<"投出的点数和:"<<sumOfDice<<endl;
+            if(countRoll==1){
+                switch (sumOfDice)
+                {
+                case 7:
+                case 11:
+                    gameStatus = WIN;
+                    break;
+                case 2:case 3:case 12:
+                    gameStatus = LOSE;
+                    break;
+                default:
+                    gameStatus = CONTINUE;
+                    firstPoint = sumOfDice;
+                    break;
+                }
+            }
+            else
+            {
+                if(sumOfDice == firstPoint)
+                {
+                    gameStatus = WIN;
+                }
+                else if(sumOfDice == 7)
+                {
+                    gameStatus = LOSE;
+                }
+            }
+
+            if(gameStatus == CONTINUE)
+            {
+                cout<<"当前还未结束，继续投骰子..."<<endl;
+            }
+            else
+            {
+                if(gameStatus == WIN)
+                {
+                    cout<<"玩家获胜"<<endl;
+                    winCount++;
+                    break;
+                }
+                else
+                {
+                    cout<<"玩家失败"<<endl;
+                    loseCount++;
+                    break;
+                }
+                /*
+                cout<<"再玩一次？"<<endl;
+                cin>>c;
+                if(c=='n')
+                {
+                    cout<<"游戏结束"<<endl;
+                    break;
+                }
+                */
+                countRoll = 0;
+                
+            }
+
+            
+        }
+        test_index++;
+    }
+    cout<<"测试次数"<<test_index<<",胜率 "<<(double)winCount/loseCount<<endl;
+
+}
+
+/*
+ 说着名犹太历史学家 Josephus有过以下的故事： 在罗马人占领乔塔帕特后， 39 个犹
+太人与Josephus及他的朋友躲到一个洞中， 39个犹太人决定宁愿死也不要被敌人到， 于是决定了
+一个自杀方式， 41个人排成一个圆圈， 由第1个人 开始报数， 每报数到第3人该人就必须自杀，
+然后再由下一个重新报数， 直到所有人都自杀身亡为止。
+然而Josephus 和他的朋友并不想遵从， Josephus要他的朋友先假装遵从，他将朋友与自己安排
+在第16个与第31个位置，于是逃过了这场死亡游戏
+*/
+void JosephusSurvive()
+{
+    
+    const int nPerson = 41;  //人数
+    const int nNumberDie = 3;         //数到3则死
+    int person[nPerson] = {0}; //存入死亡顺序，默认0为未死亡。
+    int count =1 ;
+    int i =0, pos = -1;
+    int alive = 3; //救下两个人
+
+    while(count<=nPerson)
+    {
+        //开始数数字，一共要玩nPerson轮，每一轮确定一个人去死
+        do{
+            //环形数组
+            pos = (pos+1)%nPerson;
+
+            //我还没死，所以我数数字
+            if(person[pos]==0)
+                i++;
+            //我数到了3，则
+            if(i==nNumberDie)
+            {
+                //报到3的人得死，重置数数字
+                i = 0;
+                break;
+            }
+        }
+        while(1);
+        person[pos]=count;
+        count++;
+    }
+
+    for(i = 0; i< nPerson; i++)
+    {
+        cout<<person[i]<<",";
+    }
+    
+    cout<<"如果有如下"<<alive<<"数量的人不想真的去自杀，则需要安排在如下位置"<<endl;
+    for(i = 0; i < nPerson; i++)
+    {
+        if(person[i] > (nPerson-alive))
+            cout<<"O";
+        else
+            cout<<"X";
+        if((i+1)%5 == 0)
+            cout<<" ";
+    }
+    cout<<endl;
+   
+
+}
+
+// 排列组合，比如1234四个数字，有多少种排列？
+
+class PaiLieZuHe
+{
+    public:
+       const int N = 4;
+    void perm(int* num, int i) 
+    {
+        int j, k, tmp;
+        if(i < N) {
+        for(j = i; j <= N; j++) {
+        tmp = num[j];
+        // 旋转该区段最右边数字至最左边
+        for(k = j; k > i; k--)
+        num[k] = num[k-1];
+        num[i] = tmp;
+        perm(num, i+1);
+        // 还原
+        for(k = i; k < j; k++)
+        num[k] = num[k+1];
+        num[j] = tmp;
+        }
+        }
+        else { // 显示此次排列
+        for(j = 1; j <= N; j++)
+        printf("%d ", num[j]);
+        cout<<endl;
+        }
+    }
+    void MainTest()
+    {
+        int num[N+1],i;
+        for(i=1;i<=N;i++)
+        {
+        num[i] = i;
+        }
+        perm(num,1);
+    }
+    static void Test()
+    {
+        PaiLieZuHe p ;
+        p.MainTest();
+    }
+};
+
+
+// 学生成绩得分排名
+//提供了两个方法，一个最容易想到的方法，复杂度为n的平方，另一个高效方法，为2N
+class ScoreAndSort
+{
+    private:
+        static const int MAX = 100;  //最多100个人
+        static const int MIN = 0;   //最少0人
+
+    public:
+        void MainTest()
+        {
+            int score[MAX+1]={0}; //保存所有分数
+            int juni[MAX+2]={0};  //索引用作排名，内容是对应的分数
+            int count =0,i;
+            //输入分数，score保存
+            do{
+                printf("输入分数，-1结束:");
+                scanf("%d",&score[count++]);
+            }
+            while(score[count-1]!=-1);
+            count--;
+
+            for(i=0;i<count;i++)
+            {
+                juni[score[i]]++;  //根据不同分数，索引juni对应位置的数值进行+1操作，代表该分数出现过一次。
+            }
+
+            //此时juni中保存了所有分数出现的次数。
+            //将最右边设置为1，表示第一名。这样可以避免第一名同时有两个成绩的情况。
+            juni[MAX+1]=1;
+            //从右往左，依次将当前数值加上右边数值后的值填入当前数值。 因为没有出现的分数对应位置是0，所以结果可以代表当前分数对应的排名。
+            for(i=MAX; i>= MIN; i--)
+            {
+                //第i的位置表示的是i-1人的排名
+                juni[i] = juni[i] + juni[i+1];
+            }
+            
+            //显示
+            for(i=0;i<count;i++)
+            {
+                printf("%d\t%d\n", score[i], juni[score[i]+1]);
+            }
+
+        }
+
+        static void Test()
+        {
+            ScoreAndSort sas ;
+            sas.MainTest();
+        }
+
+};
+
 
 int main()
 {
@@ -791,7 +1413,17 @@ int main()
     //GameOfLife::Test();
    // SkipStringFind::Test();
     //BagPorblem::Test();
-MetoCarloPi();
+    //MetoCarloPi();
+    //Eratosthenes();
+    //primenumber();
+    //GCD();
+    //Armstrong();
+    //Visitor::Test();
+    //XiPai();
+    //crapsGame();
+    //JosephusSurvive();
+    //PaiLieZuHe::Test();
+    ScoreAndSort::Test();
     cout<<"程序结束\n"<<endl;
     return 0;
 }
