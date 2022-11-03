@@ -1400,6 +1400,200 @@ class ScoreAndSort
 };
 
 
+class Sort
+{
+    public:
+        static const int N = 10;
+        int num[N] = {0};
+        void RandNum()
+        {
+            cout<<"排序前"<<endl;
+            for(int i = 0; i<10;i++)
+            {
+                num[i]= rand()%100;
+                cout<<num[i]<<" ";
+            }
+            cout<<"\n";
+        }
+        Sort()
+        {
+            srand(time(NULL));
+            RandNum();
+        }
+
+        /// @brief 从小到大排序，每次从右边的非排序数列中找到一个最小的放入到左边有序列中
+        void selectSort()
+        {
+            int minValueIndex = 0;
+            for(int i = 0; i<10-1; i++)
+            {
+                //只要对10-1个值进行选择插叙
+                minValueIndex = i;
+                for(int j = i+1; j< 10; j++)
+                {
+                    if(num[j]<num[minValueIndex])
+                    {
+                        minValueIndex = j;
+                    }
+                }
+                if(i!=minValueIndex)
+                {
+                    //如果找到最小的并非当前i位置的值，则交换
+                    swap(num[i],num[minValueIndex]);
+                }
+                cout<<"第"<<i+1<<"次排序";
+                for(int k=0; k<10;k++)
+                {
+                    cout<<num[k]<<" ";
+                }
+                cout<<endl;
+            }
+        }
+        /// @brief 将后面无序的最前的数取出，插入到前面有序列中的恰当位置
+        void insertSort()
+        {
+            RandNum();
+            int tempValue = 0;
+            int j = 0;
+            //第一个数不需要，直接从第二个数开始
+            for(int i = 1; i<10; i++)
+            {
+                
+                tempValue = num[i]; //待插入值
+                
+                for( j= i-1; j>= 0; j--)
+                {
+                    if(num[j]>tempValue)
+                    {
+                        num[j+1] = num[j];//大的值往后移动一位
+                    }
+                    else
+                    {
+                        break; //找到位置
+                    }
+                    
+                }
+                num[j+1] = tempValue;
+
+
+
+                cout<<"第"<<i<<"次排序";
+                for(int k=0; k<10;k++)
+                {
+                    cout<<num[k]<<" ";
+                }
+                cout<<endl;
+            }
+        }
+
+        //从左向右，从小到大排序冒泡，最大的数第一轮就会排到最后面，最小的数最后一轮才会排前面
+        void bubleSort()
+        {
+            RandNum();
+            int i,j,k;
+            bool flag = true; //如果为false，就是没有发生元素变动，说明已经全部排序完成，无序再继续回圈遍历比较。
+            for(i=0;i<(10-1) && flag; i++)
+            {
+                flag = false;
+                for(j=0; j< 10-i-1; j++)
+                {
+                    if(num[j]>num[j+1])
+                    {
+                        swap(num[j+1],num[j]);
+                        flag = true;
+                    }
+                }
+                cout<<"第"<<i+1<<"次排序";
+                for(int k=0; k<10;k++)
+                {
+                    cout<<num[k]<<" ";
+                }
+                cout<<endl;
+            }
+        }
+        /// @brief 普通间隔的希尔排序：改良的插入排序,充分利用每次排序的信息作为前提来指导下次排序。
+        void shellInsertSort()
+        {
+            RandNum();
+            int i,j,k,gap,t;
+            int count = 0;
+            for(gap = N/2;gap>0;gap=gap/2)
+            {
+                for(k=0;k<gap;k++)
+                {
+                    count++;
+                    //下面就是普通插入排序的算法了，只不过取数据的时候要gap距离
+                    //选出所有gap距离的数据,除去第一个元素
+                    for(i = k+gap;i<N;i+=gap)
+                    {
+                        //将选出的数据插入到之前的有序列中,这里选择交换的方式插入，
+                        for(j = i-gap;j>=k;j-=gap)
+                        {
+                            if(num[j]>num[j+gap])
+                            {
+                                swap(num[j+gap],  num[j]); //大的数据往后移动
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                          
+                    }
+                    cout<<"第"<<count<<"次排序";
+                    for(int k=0; k<10;k++)
+                    {
+                        cout<<num[k]<<" ";
+                    }
+                    cout<<endl;
+                }
+               
+            }
+
+        }
+        /// @brief 思想：每次遍历，既要选出最大值，也要选出最小值，分别放在最右边和最左边，这样可以减少排序次数。这个思想可以用于其他排序。
+        void shakerSort()
+        {
+            //不高兴写了，就是加left和right两个变量指示最大和最小的位置，在此位置之间的才是需要排序的数字。
+        }
+
+        void createHeap();
+        /// @brief 改良的选择排序法：堆排序，堆排序每次从一条路径选择，而不是所有元素，所以称之为改进的选择排序。
+        void heapSort()
+        {
+            RandNum();
+            createHeap();
+            int i=0;
+            for(i = 0; i < N; i++)
+                printf("%d ", num[i]);
+            
+        }
+        void createHeap()
+        {
+            cout<<"创建堆树(二叉树)"<<endl;
+
+            int i,s,p;
+            int heap[N] = {-1};
+            for(i=0;i<N;i++)
+            {
+                heap[i]=num[i];
+                s = i;
+                p = (i+1)/2;
+            }
+            
+        }
+        static void Test()
+        {
+            Sort s ; 
+            //冒泡排序优于选择和插入排序，因为冒泡可能提前发现数据已经有序而提前完成排序。
+            s.selectSort();
+            s.insertSort();
+            s.bubleSort();
+            s.shellInsertSort();
+        }
+
+}
+;
 int main()
 {
     std::cout<<"程序启动!\n"<<std::endl;   
@@ -1423,7 +1617,8 @@ int main()
     //crapsGame();
     //JosephusSurvive();
     //PaiLieZuHe::Test();
-    ScoreAndSort::Test();
+   // ScoreAndSort::Test();
+   Sort::Test();
     cout<<"程序结束\n"<<endl;
     return 0;
 }
