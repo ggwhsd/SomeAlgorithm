@@ -1557,31 +1557,386 @@ class Sort
             //不高兴写了，就是加left和right两个变量指示最大和最小的位置，在此位置之间的才是需要排序的数字。
         }
 
-        void createHeap();
+        int sortCount = 0;
+        void createHeap()
+        {
+            sortCount = 0;
+            cout<<"创建一个大顶堆"<<endl;
+
+            int i,s,p;
+            int len = sizeof(num)/sizeof(num[0]);
+            //获取倒数第一个非叶子节点，因为叶子节点没有子节点无需比较，
+            //该非叶子节点之前的节点肯定都是非叶子节点。
+            for(i= len/2-1; i>=0; i--)
+            {
+               //调整堆
+               adjustHeap(i,len);
+            }
+
+
+
+        }
         /// @brief 改良的选择排序法：堆排序，堆排序每次从一条路径选择，而不是所有元素，所以称之为改进的选择排序。
+        /// 从小到大的升序排序，是需要先创建大顶堆，然后将堆顶元素与尾节点互换，再依次构造大顶堆，互换这种方式。
+        /*
+        堆排序的基本思想是：1.将待排序序列构造成一个大顶堆，此时，整个序列的最大值就是堆顶的根节点。
+                          2.将其与末尾元素进行交换，此时末尾就为最大值。
+                          3.然后将剩余n-1个元素重新构造成一个堆，
+                          4.这样会得到n个元素的次小值。如此反复执行，便能得到一个有序序列
+        */
         void heapSort()
         {
+            cout<<"heapSort"<<endl;
             RandNum();
+            
+
             createHeap();
             int i=0;
             for(i = 0; i < N; i++)
                 printf("%d ", num[i]);
             
-        }
-        void createHeap()
-        {
-            cout<<"创建堆树(二叉树)"<<endl;
-
-            int i,s,p;
-            int heap[N] = {-1};
-            for(i=0;i<N;i++)
+            for(int j=N-1;j>0;j--)
             {
-                heap[i]=num[i];
-                s = i;
-                p = (i+1)/2;
+                //交换大堆顶和尾部数据
+                swap(num[0],num[j]);
+                //对剩余数据进行重新调整。
+                adjustHeap(0,j);
             }
+
+            cout<<"执行次数:"<<sortCount<<endl;
+
+            
             
         }
+        
+        //调整大顶堆,将位置i的元素调整为最大的值，会沿着一条路径一直往下调整
+        void adjustHeap(int i, int length)
+        {
+            //缓存调整的数值
+            int temp = num[i];
+            //我觉得：k=k*2+1，每次如果出现值调整，必须沿着路径一直往下调整，如果没有调整，实际上无需沿着路径往下调整。
+            bool isAdjust = false;
+            for(int k = i*2+1; k<length; k=k*2+1)
+            {
+                //获取i的左子节点i*2+1。
+                if(k+1<length && num[k]<num[k+1])
+                {
+                    k++; //如果右子节点存在，则比较左右子节点。
+                    //如果右节点大于左节点，则k定位为右节点。
+                    //此时 k 是左右节点中的较大值
+                }
+                //将较大的子节点与父节点比较
+                if(num[k] > temp)
+                {
+                    isAdjust = true;
+                    num[i] = num[k];
+                    i = k;  //k位置的数据赋值给i位置，那么k位置的数据就是多余的了，将k保存起来，以便最后将原始i位置的数据填入到k位置。这样就不用每次都进行交换元素了。
+                }
+                sortCount++;
+                if(isAdjust==false)
+                {
+                    break;
+                }
+
+            }
+
+
+            num[i] = temp;
+
+            cout<<"第x次排序";
+            for(int k=0; k<10;k++)
+            {
+                cout<<num[k]<<" ";
+            }
+            cout<<endl;
+
+        }
+
+        /// @brief 快速排序属于较为推荐的排序，不过其最差情况是O(n*n)
+        /// 在数列中找出适当的轴心，然后将数列一分为二，分别对左边与右边数列进行排序，而影响快速排序法效率的正是轴心的选
+        void quickSort_v1()
+        {
+            sortCount = 0;
+            //RandNum();
+            int tempNum[N]={67,20,14,25,53,19,3,17,22,56};
+            memcpy(num,tempNum,N*4);
+
+
+            printf("排序前： ");
+            int i=0;
+            for(i = 0; i < N; i++)
+                printf("%d ", num[i]);
+
+            quickSort_v1(0,N-1);
+
+            printf("排序后： ");
+            
+            for(i = 0; i < N; i++)
+                printf("%d ", num[i]);
+            cout<<"执行次数:"<<sortCount<<endl;
+        }
+
+        void quickSort_v1(int left, int right)
+        {
+            int len = sizeof(num)/sizeof(num[0]);
+            int i_left,j_right,s_flagNumber;
+            if(left<right)
+            {
+                s_flagNumber = num[left];
+                i_left = left;
+                j_right = right+1;
+                while(true){
+                    //向右找到不小于s_flagNumber数的位置
+                    while(i_left+1<len)
+                    {
+                        sortCount++;
+                        i_left++;
+                        if(num[i_left]<s_flagNumber)
+                        {
+                        }
+                        else
+                            break;
+                    }
+                    while(j_right-1 >=0)
+                    {
+                        sortCount++;
+                        j_right--;
+                        if(num[j_right]>s_flagNumber)
+                        {
+                        }
+                        else
+                            break;
+                    }
+                    if(i_left >= j_right)
+                        break;
+                    swap(num[i_left],num[j_right]);
+                }
+                num[left] = num[j_right];
+                num[j_right] = s_flagNumber;
+                quickSort_v1(left,j_right-1);
+                quickSort_v1(j_right+1,right);
+            }
+            else
+            {
+
+            }
+        }
+        /// @brief s_flagNumber每次去最左边的数，如果遇到原有数据就是按照从左到右或者从右到左排序的，则算法复杂度就是O(n*n)了，
+        /// 因此改进这种方法，将s_flagNumber=中间位置 (left+right)/2，这样每次都从中间开始。
+        void quickSort_v2()
+        {
+            //RandNum();
+            int tempNum[N]={67,20,14,25,53,19,3,17,22,56};
+            memcpy(num,tempNum,N*4);
+
+            sortCount=0;
+            printf("排序前： ");
+            int i=0;
+            for(i = 0; i < N; i++)
+                printf("%d ", num[i]);
+
+            quickSort_v2(num,0,N-1);
+
+            printf("排序后： ");
+            
+            for(i = 0; i < N; i++)
+                printf("%d ", num[i]);
+            cout<<"执行次数:"<<sortCount<<endl;         
+        }
+
+        void quickSort_v2(int nums[],int left, int right)
+        {
+            int len = right+1;
+            int i_left,j_right,s_flagNumber;
+            if(left<right)
+            {
+                s_flagNumber = nums[(left+right)/2]; 
+                i_left = left-1;
+                j_right = right+1;
+                while(true){
+                    //向右找到不小于s_flagNumber数的位置
+                    while(i_left+1<len)
+                    {
+                        sortCount++;
+                        i_left++;
+                        if(nums[i_left]<s_flagNumber)
+                        {
+                        }
+                        else
+                            break;
+                    }
+                    while(j_right-1 >=0)
+                    {
+                        sortCount++;
+                        j_right--;
+                        if(nums[j_right]>s_flagNumber)
+                        {
+                        }
+                        else
+                            break;
+                    }
+                    if(i_left >= j_right)
+                        break;
+                    swap(nums[i_left],nums[j_right]);
+                }
+               
+                quickSort_v2(nums,left,i_left-1);
+                quickSort_v2(nums,j_right+1,right);
+            }
+            else
+            {
+
+            }
+        }
+
+        
+        /// @brief 合并排序，主要用于对两个有序的序列进行合并，当然也可以对一个无序的序列进行不停的递归拆分至一个元素，然后反过来再进行合并。
+        void mergeSort()
+        {
+
+            sortCount=0;
+            printf("排序前： ");
+            int i=0;
+            for(i = 0; i < N; i++)
+                printf("%d ", num[i]);
+
+            int number1[N] = {67,20,14,25,53,19,3,17,22,56};
+            int number2[N] = {67,20,14,31,36,38,58,78,83,92};
+            int number3[N+N] = {0};
+            int n;
+            
+            quickSort_v2(number1,0,N-1);
+            quickSort_v2(number2,0,N-1);
+
+            cout<<"先分别排序2笔："<<endl;
+            for(i = 0; i < N; i++)
+                printf("%d ", number1[i]);
+            cout<<"\n";
+            for(i = 0; i < N; i++)
+                printf("%d ", number2[i]);
+            cout<<"\n";
+
+            mergeSort(number1,N,number2,N,number3);
+            
+            printf("合并排序后： ");
+             for(i = 0; i < N*2; i++)
+                printf("%d ", number3[i]);
+            cout<<"\n";
+        }
+
+       
+        /// @brief 将number1数组和number2数组合并排序到number3，M代表number1的长度，N代表number2的长度。
+        /// @param number1 
+        /// @param M 
+        /// @param number2 
+        /// @param N 
+        /// @param number3 
+        void mergeSort(int number1[], int M, int number2[], int N, int number3[])
+        {
+            int i=0; 
+            int j=0;
+            int k=0;
+            while(i<M&& j<N){
+                if(number1[i]<=number2[j])
+                {
+                    //将大的数放到number3，大的数组当前索引往后走一位。
+                    number3[k++] = number1[i++];
+                }
+                else
+                {
+                    number3[k++] = number2[j++];
+                }
+
+            }
+            while(i<M)
+            {
+                number3[k++] = number1[i++];
+
+            }
+            while(j<N)
+            {
+                number3[k++]=number2[j++];
+            }
+        }
+
+
+
+        /// @brief 计算数组中的数字的最大位数
+        /// @param data 
+        /// @param n 
+        /// @return 
+        int maxbit(int data[],int n)
+        {
+            int d=1;
+            for(int i=0;i<n;i++)
+            {
+                int c=1;
+                int p=data[i];
+                while(p/10)
+                {
+                    p=p/10;
+                    c++;
+                }
+                if(c>d)
+                    d=c;
+            }
+            return d;
+        }   
+        /// @brief 基数排序:将数字按照位数，依次对个位数进行排序，此时得到一个个位数上从小到大的序列，然后在此基础上再按照十位数进行排序，依次类推，直到所有位数都排序完之后，就完成了排序
+        void radixSort()
+        {
+            //因为tmp数据没有采用链表或者二维数组，而是采用了一维数组，因此逻辑上稍微难懂一点，不过很巧妙，与成绩排名问题很像。
+            int data[N] = {67,20,14,25,53,19,3,17,22,56};
+            int tmp[N]={0};
+            int count[N] = {0};  //桶
+            cout<<"\n排序前"<<endl;
+            for(int i = 0; i < 10; i++)
+            {
+                cout<<" "<<data[i];
+            }
+
+            int digit = maxbit(data,10);
+            int r=1;
+            int k=0;
+            for(int i=0;i<digit;i++)
+            {
+                //有几位，就要基数排几轮
+                for(int j=0;j<N;j++)//装桶之前要先清桶
+                    count[i]=0;
+
+
+                for(int j=0;j<N;j++) //记录每个桶的记录数，从前往后取数
+                {
+                     k=(data[j]/r)%10;  //获取对应位数,r=1，获取个位，r=10，则十位数
+                     count[k]++;  //对应位数的桶进行记录
+                }
+                
+                for(int j = 1; j < N; j++)
+                {
+                    count[j] = count[j - 1] + count[j]; //将tmp中的位置依次分配给每个桶
+                }
+
+
+                for(int j = N - 1; j >= 0; j--) //将所有桶中记录依次收集到tmp中，从后往前
+                {
+                    k = (data[j] / r) % 10;
+                    tmp[count[k] - 1] = data[j];
+                    count[k]--;
+                }
+
+                for(int j = 0; j < N; j++) //将临时数组的内容复制到data中
+                    data[j] = tmp[j];
+                r = r * 10;
+            }
+            cout<<"\n排序后"<<endl;
+            for(int i = 0; i < 10; i++)
+            {
+                cout<<" "<<data[i];
+            }
+          
+
+        }
+
         static void Test()
         {
             Sort s ; 
@@ -1590,10 +1945,73 @@ class Sort
             s.insertSort();
             s.bubleSort();
             s.shellInsertSort();
+            s.heapSort();
+            s.quickSort_v1();
+            s.quickSort_v2();
+            s.mergeSort();
+            s.radixSort();
         }
 
 }
 ;
+
+
+class Search
+{
+    public:
+
+    void BaseSearch()
+    {
+        int data[10] = {67,20,14,25,53,19,3,17,22,56};
+        int key = 3;
+        int i=0;
+        while(i<10)
+        {
+            if(data[i]==key)
+            {
+                break;
+            }
+            i++;
+        }
+
+        cout<<"search的位置："<<i<<endl;
+    }
+
+    void BaseSearch_Guard()
+    {
+        int data[10] = {67,20,14,25,53,19,3,17,22,56};
+        int key = 3;
+        if(data[0]==key)
+        {
+            cout<<"search的位置："<<0<<endl;
+            return;
+        }
+        else
+        {
+            data[0] = key;
+            int i =9;
+            while(data[i]!=key)
+            {
+                i--;
+            }
+            if(i==0)
+            {
+                 cout<<"search不到"<<endl;
+            }
+            else
+            {
+                cout<<"search的位置："<<i<<endl;
+            }
+        }
+    }
+
+    static void Test()
+    {
+        Search s;
+s.BaseSearch_Guard();
+    }
+};
+
 int main()
 {
     std::cout<<"程序启动!\n"<<std::endl;   
@@ -1619,6 +2037,7 @@ int main()
     //PaiLieZuHe::Test();
    // ScoreAndSort::Test();
    Sort::Test();
+   Search::Test();
     cout<<"程序结束\n"<<endl;
     return 0;
 }
