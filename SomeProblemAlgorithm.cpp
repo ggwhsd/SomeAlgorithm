@@ -1657,9 +1657,9 @@ class Sort
         void quickSort_v1()
         {
             sortCount = 0;
-            //RandNum();
-            int tempNum[N]={67,20,14,25,53,19,3,17,22,56};
-            memcpy(num,tempNum,N*4);
+            RandNum();
+            //int tempNum[N]={67,20,14,25,53,19,3,17,22,56};
+            //memcpy(num,tempNum,N*4);
 
 
             printf("排序前： ");
@@ -1959,7 +1959,7 @@ class Sort
 class Search
 {
     public:
-
+    int findCount = 0;
     void BaseSearch()
     {
         int data[10] = {67,20,14,25,53,19,3,17,22,56};
@@ -2004,13 +2004,139 @@ class Search
             }
         }
     }
+    /// @brief 对已经有序的数据进行二分查找,二分查找是每次采取中间位置，可以理解为50%的比例位置来做
+    /// @param num 
+    /// @param num_length 
+    /// @param key 
+    int BinarySearch(int num[],int num_length, int key)
+    {
+        findCount = 0;
+        int low_index,high_index,mid_index;
+        low_index = 0;
+        high_index = num_length-1;
+        while(low_index<=high_index)
+        {
+            //每次找到需要查询数据范围的中间位置
+            mid_index = ( low_index + high_index )/2;
+            if(num[mid_index] == key)
+            {
+                return mid_index;
+            }
+            else if(num[mid_index] > key)
+            {
+                high_index = mid_index-1;
+            }
+            else
+            {
+                low_index = mid_index + 1;
+            }
+            findCount++;
+        }
+        return -1;
+
+    }
+    /// @brief 插补搜寻法，与二分查找法类似，不过用的比例不是50%，而是根据简单的比例公式来计算. 但是这个适用于数量比较大的情况下，据说是大于500以上，才可能有效果。
+    /// 
+    /// @param num 
+    /// @param num_length 
+    /// @param key 
+    int InterpolationSearch(int num[],int num_length, int key)
+    {
+        findCount = 0;
+        int low_index,high_index,mid_index;
+        low_index = 0;
+        high_index = num_length-1;
+        while(low_index<=high_index)
+        {
+            //每次找到需要查询数据范围的中间位置
+            mid_index = (key - num[low_index])/(num[high_index] - num[low_index])*(high_index-low_index)+low_index;
+            if(mid_index < low_index || mid_index > high_index)
+            {
+                return -1;
+            }
+            if(num[mid_index] == key)
+            {
+                return mid_index;
+            }
+            else if(num[mid_index] > key)
+            {
+                high_index = mid_index-1;
+            }
+            else
+            {
+                low_index = mid_index + 1;
+            }
+            findCount++;
+        }
+        return -1;      
+    }
 
     static void Test()
     {
         Search s;
-s.BaseSearch_Guard();
+        s.BaseSearch_Guard();
+
+        Sort sort ;
+        sort.quickSort_v1();
+        cout<<"InterpolationSearchIndex:"<<s.InterpolationSearch(sort.num,sort.N,sort.num[6]);
+        cout<<" "<<s.findCount<<endl;
+
+        cout<<"binarySearchIndex:"<<s.BinarySearch(sort.num,sort.N,sort.num[7]);
+        cout<<" "<<s.findCount<<endl;
     }
 };
+
+/// @brief 稀疏矩阵，即对于一个实际资料量很少但是元素数量本身很多的矩阵。 比如 一个矩阵只有一个位置有数，则只要记录一下矩阵本身大小以及含有1个数，然后再记录下哪行哪列哪个数字。
+void SparseMatrix()
+{
+    /*
+        0 0 0 0 0 0
+        0 3 0 0 0 0
+        0 0 0 6 0 0
+        0 0 9 0 0 0
+        0 0 0 0 12 0
+    */
+    int num[5][3] = {{5, 6, 4},
+                    {1, 1, 3},
+                    {2, 3, 6},
+                    {3, 2, 9},
+                    {4, 4, 12}};
+    int i,j,k = 1;
+    cout<<"稀疏矩阵的节约存储方式:\n";
+    for(i = 0;i<5;i++)
+    {
+        for(j = 0; j<3;j++)
+        {
+            printf("%4d",num[i][j]);
+        }
+    }
+    cout<<endl;
+    cout<<"还原原始矩阵:\n";
+    //输出多少行：5
+    for(i = 0; i<num[0][0]; i++)
+    {
+        //输出多少列：6
+        for(j =0; j<num[0][1]; j++)
+        {
+            
+            if(k<num[0][2])
+            {
+                //输出位置与对应记录的位置一样，则输出值
+                if(i == num[k][0] && j == num[k][1])
+                {
+                    printf("%4d",num[k][2]);
+                    k++;
+                }
+                else
+                    printf("%4d", 0);
+            }
+            else
+                    printf("%4d", 0);
+        }
+        cout<<""<<endl;
+    }
+
+}
 
 int main()
 {
@@ -2036,8 +2162,9 @@ int main()
     //JosephusSurvive();
     //PaiLieZuHe::Test();
    // ScoreAndSort::Test();
-   Sort::Test();
-   Search::Test();
+   //Sort::Test();
+   //Search::Test();
+   SparseMatrix();
     cout<<"程序结束\n"<<endl;
     return 0;
 }
